@@ -1,0 +1,322 @@
+/* =========================================================
+   IDENTITY — AUTHENTICATION INTERFACE
+   ========================================================= */
+
+.identity-body {
+    min-height: 100vh;
+    background: var(--forest);
+}
+
+.identity-page {
+    position: relative;
+    isolation: isolate;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding: 40px var(--page-gutter);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    color: white;
+    background: var(--forest);
+}
+
+.identity-background {
+    position: absolute;
+    z-index: -2;
+    inset: 0;
+    background:
+        url("https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2400&q=90") center / cover no-repeat;
+    transform: scale(1.04);
+}
+
+.identity-overlay {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background:
+        linear-gradient(90deg,
+            rgba(12, 32, 26, .91),
+            rgba(12, 32, 26, .72) 48%,
+            rgba(12, 32, 26, .52)),
+        linear-gradient(0deg,
+            rgba(12, 32, 26, .45),
+            transparent 50%);
+}
+
+.identity-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 13px;
+    width: fit-content;
+    color: white;
+    text-decoration: none;
+}
+
+.identity-brand-mark {
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .42);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, .09);
+    font: 26px var(--font-display);
+}
+
+.identity-brand strong,
+.identity-brand small {
+    display: block;
+}
+
+.identity-brand strong {
+    font-size: 10px;
+    letter-spacing: 1.7px;
+}
+
+.identity-brand small {
+    margin-top: 5px;
+    font-size: 8px;
+    letter-spacing: 1.8px;
+    opacity: .7;
+}
+
+.identity-content {
+    width: min(1120px, 100%);
+    margin: 55px auto;
+    display: grid;
+    grid-template-columns: 1fr 440px;
+    align-items: center;
+    gap: 80px;
+}
+
+.identity-introduction {
+    max-width: 560px;
+}
+
+.identity-eyebrow {
+    color: var(--sage-light);
+    font-size: 9px;
+    letter-spacing: 2.5px;
+}
+
+.identity-introduction h1 {
+    margin: 25px 0;
+    font: 400 clamp(44px, 5.5vw, 72px)/1.12 var(--font-display);
+    letter-spacing: -1.5px;
+}
+
+.identity-introduction h1 em,
+.identity-panel-heading h2 em {
+    display: block;
+    color: var(--sage-light);
+    font-weight: 400;
+}
+
+.identity-introduction p {
+    max-width: 440px;
+    color: rgba(255, 255, 255, .72);
+    font-size: 13px;
+    line-height: 1.9;
+}
+
+.identity-caption {
+    display: block;
+    margin-top: 55px;
+    color: rgba(255, 255, 255, .58);
+    font-size: 9px;
+    letter-spacing: 2px;
+}
+
+.identity-panel {
+    padding: 38px;
+    border-radius: 26px;
+    background:
+        linear-gradient(135deg,
+            rgba(255, 255, 255, .16),
+            rgba(255, 255, 255, .035) 55%),
+        rgba(16, 35, 30, .58);
+    border-color: rgba(255, 255, 255, .42);
+}
+
+.identity-panel-heading h2 {
+    margin: 17px 0 8px;
+    font: 400 38px var(--font-display);
+}
+
+.identity-panel-heading h2 em {
+    display: inline;
+}
+
+.identity-panel-heading p {
+    margin: 0 0 30px;
+    color: rgba(255, 255, 255, .65);
+    font-size: 11px;
+    line-height: 1.7;
+}
+
+.identity-field {
+    margin-top: 22px;
+}
+
+.identity-field label {
+    display: block;
+    margin-bottom: 9px;
+    color: rgba(255, 255, 255, .82);
+    font-size: 11px;
+}
+
+.identity-field input {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 15px;
+    color: white;
+    background: rgba(255, 255, 255, .075);
+    border: 1px solid rgba(255, 255, 255, .23);
+    border-radius: 12px;
+    outline: none;
+    font-size: 12px;
+    transition: border-color 200ms, background 200ms;
+}
+
+.identity-field input::placeholder {
+    color: rgba(255, 255, 255, .4);
+}
+
+.identity-field input:focus {
+    border-color: var(--sage-light);
+    background: rgba(255, 255, 255, .11);
+}
+
+.identity-field span.field-validation-error {
+    display: block;
+    margin-top: 7px;
+    color: #ffd0c7;
+    font-size: 10px;
+}
+
+.identity-password {
+    position: relative;
+}
+
+.identity-password input {
+    padding-right: 65px;
+}
+
+.identity-password button {
+    position: absolute;
+    top: 50%;
+    right: 13px;
+    transform: translateY(-50%);
+    padding: 6px;
+    border: 0;
+    color: var(--sage-light);
+    background: transparent;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.identity-remember {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 20px 0 25px;
+    color: rgba(255, 255, 255, .72);
+    font-size: 10px;
+}
+
+.identity-remember input {
+    accent-color: var(--sage);
+}
+
+.identity-submit {
+    width: 100%;
+    min-height: 51px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    border: 1px solid rgba(255, 255, 255, .55);
+    border-radius: 13px;
+    color: var(--forest);
+    background: var(--mist);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 200ms, transform 200ms;
+}
+
+.identity-submit:hover {
+    background: white;
+    transform: translateY(-2px);
+}
+
+.identity-submit span {
+    font-size: 18px;
+}
+
+.identity-validation {
+    margin: 0 0 15px;
+    color: #ffd0c7;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.identity-validation:empty {
+    display: none;
+}
+
+.identity-panel-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 28px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, .17);
+    color: rgba(255, 255, 255, .48);
+    font-size: 7px;
+    letter-spacing: 1px;
+}
+
+.identity-bottom {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    color: rgba(255, 255, 255, .55);
+    font-size: 8px;
+    letter-spacing: 1.5px;
+}
+
+@media (max-width: 850px) {
+    .identity-content {
+        grid-template-columns: 1fr;
+        gap: 35px;
+        max-width: 480px;
+    }
+
+    .identity-introduction h1 {
+        font-size: 46px;
+    }
+
+    .identity-caption {
+        display: none;
+    }
+}
+
+@media (max-width: 520px) {
+    .identity-page {
+        padding: 25px 6%;
+    }
+
+    .identity-panel {
+        padding: 27px 22px;
+    }
+
+    .identity-introduction h1 {
+        font-size: 39px;
+    }
+
+    .identity-bottom {
+        font-size: 7px;
+    }
+}
