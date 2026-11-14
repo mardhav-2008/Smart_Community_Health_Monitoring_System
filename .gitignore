@@ -1,13 +1,33 @@
+# .NET build outputs
 bin/
 obj/
 .vs/
 
+# IDE files
 *.user
 *.suo
+.vscode/
 
+# Test results
 TestResults/
 
-# SQLite database files
-data/*.db
-data/*.db-shm
-data/*.db-wal
+# SQLite databases and journals
+*.db
+*.db-shm
+*.db-wal
+
+# Python environments
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Python tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
