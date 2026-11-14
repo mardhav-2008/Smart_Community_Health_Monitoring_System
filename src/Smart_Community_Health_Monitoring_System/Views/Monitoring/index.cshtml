@@ -1,0 +1,164 @@
+@model Smart_Community_Health_Monitoring_System.Models.MonitoringDashboardViewModel
+
+@{
+    ViewData["Title"] = "Monitoring Dashboard";
+}
+
+<section class="dashboard-page">
+
+    <div class="dashboard-heading">
+        <div>
+            <span class="section-eyebrow">COMMUNITY HEALTH INITIATIVE / PLATFORM</span>
+            <h1>Monitoring <em>overview.</em></h1>
+            <p>
+                A consolidated view of environmental observations
+                and community health information.
+            </p>
+        </div>
+
+        <div class="dashboard-status glass">
+            <span class="status-dot"></span>
+            @Model.ProjectStatus
+        </div>
+    </div>
+
+    <div class="demo-notice glass">
+        <span class="status-dot"></span>
+        Demonstration environment — all displayed values are illustrative,
+        not verified field measurements or clinical data.
+    </div>
+
+    <!-- Summary cards -->
+    <div class="dashboard-stats">
+
+        <article class="dashboard-stat glass">
+            <span class="stat-label">WATER SOURCES</span>
+            <strong>@Model.MonitoredWaterSources</strong>
+            <span class="stat-description">Illustrative monitored sources</span>
+            <span class="stat-icon">◉</span>
+        </article>
+
+        <article class="dashboard-stat glass">
+            <span class="stat-label">COMMUNITY REPORTS</span>
+            <strong>@Model.CommunityReports</strong>
+            <span class="stat-description">Illustrative submitted reports</span>
+            <span class="stat-icon">⌖</span>
+        </article>
+
+        <article class="dashboard-stat glass">
+            <span class="stat-label">DEMO ALERTS</span>
+            <strong>@Model.ActiveAlerts</strong>
+            <span class="stat-description">Sample alert records</span>
+            <span class="stat-icon">⌁</span>
+        </article>
+
+    </div>
+
+    <!-- Main dashboard grid -->
+    <div class="dashboard-grid">
+
+        <section class="dashboard-card glass">
+            <div class="dashboard-card-heading">
+                <div>
+                    <span class="section-eyebrow">ENVIRONMENTAL DATA</span>
+                    <h2>Water observations</h2>
+                </div>
+                <span class="card-index">01</span>
+            </div>
+
+            <div class="observation-table">
+
+                <div class="observation-row observation-header">
+                    <span>LOCATION</span>
+                    <span>PARAMETER</span>
+                    <span>READING</span>
+                    <span>STATUS</span>
+                </div>
+
+                @foreach (var observation in Model.WaterObservations)
+                {
+                    <div class="observation-row">
+                        <strong>@observation.Location</strong>
+                        <span>@observation.Parameter</span>
+                        <strong>
+                            @observation.Reading
+                            <small>@observation.Unit</small>
+                        </strong>
+                        <span class="observation-status">@observation.Status</span>
+                    </div>
+                }
+
+            </div>
+        </section>
+
+        <section class="dashboard-card glass">
+            <div class="dashboard-card-heading">
+                <div>
+                    <span class="section-eyebrow">COMMUNITY INFORMATION</span>
+                    <h2>Report overview</h2>
+                </div>
+                <span class="card-index">02</span>
+            </div>
+
+            <div class="health-summary">
+
+                @foreach (var item in Model.HealthSummaries)
+                {
+                    var percentage = Model.CommunityReports > 0
+                        ? (double)item.Reports / Model.CommunityReports * 100
+                        : 0;
+
+                    <div class="health-summary-item">
+                        <div class="summary-label">
+                            <span>@item.Category</span>
+                            <strong>@item.Reports</strong>
+                        </div>
+
+                        <div class="summary-track">
+                            <div class="summary-fill"
+                                 style="width: @percentage.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%">
+                            </div>
+                        </div>
+                    </div>
+                }
+
+            </div>
+
+            <p class="dashboard-footnote">
+                Illustrative categories and counts. Not epidemiological findings.
+            </p>
+        </section>
+
+    </div>
+
+    <!-- Early warning area -->
+    <section class="warning-section glass">
+
+        <div>
+            <span class="section-eyebrow">RISK COMMUNICATION</span>
+            <h2>Early warning centre</h2>
+            <p>
+                A future workspace for reviewing validated risk indicators,
+                assessment history and communication status.
+            </p>
+        </div>
+
+        <div class="warning-placeholder">
+            <span class="status-dot"></span>
+            <div>
+                <strong>Demonstration mode</strong>
+                <small>No live risk assessment is currently connected.</small>
+            </div>
+        </div>
+
+    </section>
+
+    <div class="dashboard-last-updated">
+        <span>DEMONSTRATION DATA</span>
+        <span>
+            VIEW GENERATED:
+            @Model.LastUpdated.ToString("dd MMM yyyy · HH:mm 'UTC'")
+        </span>
+    </div>
+
+</section>

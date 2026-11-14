@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - Community Health Initiative</title>
+
+    <meta name="theme-color" content="#172d29" />
+    <meta name="description"
+          content="Connecting environmental monitoring, community health information and early-warning capabilities for rural communities." />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap"
+    rel="stylesheet" />
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+
+<body>
+    <header class="site-header">
+        <nav class="liquid-navbar glass" aria-label="Main navigation">
+
+            <a class="brand" href="#home" aria-label="Community Health Initiative home">
+                <span class="brand-mark">C</span>
+
+                <span class="brand-text">
+                    <strong>COMMUNITY HEALTH</strong>
+                    <small>MONITORING INITIATIVE</small>
+                </span>
+            </a>
+
+            <div class="nav-links" id="navigation-links">
+                <a href="/#mission">Our mission</a>
+                <a href="/Monitoring">Monitoring</a>
+                <a href="/#approach">Our approach</a>
+                <a href="/#contact">Contact</a>
+            </div>
+
+            <a href="/Monitoring" class="nav-cta glass">
+                Explore platform
+                <span>↗</span>
+            </a>
+
+            <button class="menu-toggle" type="button" aria-label="Toggle navigation" aria-controls="navigation-links"
+                    aria-expanded="false">
+                <span></span>
+                <span></span>
+            </button>
+
+        </nav>
+    </header>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer" id="contact">
+        <div class="footer-main">
+            <div>
+                <span class="footer-eyebrow">COMMUNITY HEALTH INITIATIVE</span>
+                <h2>Health begins with what we understand.</h2>
+            </div>
+
+            <a href="#home" class="footer-top-link">
+                Back to top ↑
+            </a>
+        </div>
+
+        <div class="footer-bottom">
+            <span>WATER · HEALTH · COMMUNITY</span>
+            <span>ACADEMIC PROJECT · PROTOTYPE</span>
+        </div>
+    </footer>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+
+</html>
