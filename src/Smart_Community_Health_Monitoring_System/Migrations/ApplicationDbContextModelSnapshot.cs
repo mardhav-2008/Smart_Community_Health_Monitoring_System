@@ -151,10 +151,17 @@ namespace Smart_Community_Health_Monitoring_System.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("ApproximatePopulation")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("ArchivedAtUtc")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
+                        .HasMaxLength(1000)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("District")
@@ -162,10 +169,24 @@ namespace Smart_Community_Health_Monitoring_System.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double?>("Latitude")
+                        .HasPrecision(10, 7)
+                        .HasColumnType("REAL");
+
+                    b.Property<double?>("Longitude")
+                        .HasPrecision(10, 7)
+                        .HasColumnType("REAL");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("TEXT");
+
+                    b.Property<int?>("PopulationReferenceYear")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("State")
                         .IsRequired()
@@ -173,6 +194,10 @@ namespace Smart_Community_Health_Monitoring_System.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IsArchived");
+
+                    b.HasIndex("State", "District");
 
                     b.ToTable("Communities");
                 });

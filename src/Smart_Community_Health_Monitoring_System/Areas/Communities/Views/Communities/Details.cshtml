@@ -1,0 +1,340 @@
+@model CommunityDetailsViewModel
+
+@{
+    ViewData["Title"] = Model.Name;
+    var hasCoordinates = Model.Latitude.HasValue && Model.Longitude.HasValue;
+}
+
+<div class="community-details-page">
+
+    <div class="community-details-topbar">
+        <a asp-action="Index" class="community-back-link">← Back to registry</a>
+        <span class="community-record-label">COMMUNITY PROFILE · #@Model.Id</span>
+    </div>
+
+    <header class="community-profile-header">
+        <div>
+            <span class="community-eyebrow">@Model.District district · @Model.State</span>
+            <h1>@Model.Name</h1>
+            <p class="community-description">
+                @(string.IsNullOrWhiteSpace(Model.Description)
+                    ? "A registered community in the monitoring network."
+                    : Model.Description)
+            </p>
+            <div class="community-profile-meta">
+                <span>Registered @Model.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy")</span>
+                @if (Model.ApproximatePopulation.HasValue)
+                {
+                    <span>Population: @Model.ApproximatePopulation.Value.ToString("N0")</span>
+                }
+            </div>
+        </div>
+        <div class="community-profile-mark">
+            @Model.Name.Trim().Substring(0, 1).ToUpperInvariant()
+        </div>
+    </header>
+
+    <section class="community-detail-stats">
+        <article>
+            <span>WATER SOURCES</span>
+            <strong>@Model.ActiveWaterSources <small>/ @Model.TotalWaterSources</small></strong>
+            <p>Active sources</p>
+        </article>
+        <article>
+            <span>HEALTH REPORTS</span>
+            <strong>@Model.TotalHealthReports</strong>
+            <p>Aggregated reports</p>
+        </article>
+        <article>
+            <span>REPORTED CASES</span>
+            <strong>@Model.TotalReportedCases.ToString("N0")</strong>
+            <p>Across submitted reports</p>
+        </article>
+        <article>
+            <span>ACTIVE ALERTS</span>
+            <strong>@Model.ActiveAlerts <small>/ @Model.TotalAlerts</small></strong>
+            <p>Not yet closed</p>
+        </article>
+    </section>
+
+    <nav class="community-detail-tabs" role="tablist" aria-label="Community information">
+        <button type="button" class="community-tab is-active"
+                role="tab" aria-selected="true" data-tab="overview">
+            Overview
+        </button>
+        <button type="button" class="community-tab"
+                role="tab" aria-selected="false" data-tab="water">
+            Water sources <span>@Model.TotalWaterSources</span>
+        </button>
+        <button type="button" class="community-tab"
+                role="tab" aria-selected="false" data-tab="health">
+            Health reports <span>@Model.TotalHealthReports</span>
+        </button>
+        <button type="button" class="community-tab"
+                role="tab" aria-selected="false" data-tab="alerts">
+            Alerts <span>@Model.TotalAlerts</span>
+        </button>
+    </nav>
+
+    <!-- OVERVIEW -->
+    <section class="community-tab-panel is-active" data-panel="overview">
+        <div class="community-overview-grid">
+
+            <article class="community-detail-card">
+                <span class="community-eyebrow">AT A GLANCE</span>
+                <h2>Community information</h2>
+
+                <dl class="community-information-list">
+                    <div><dt>Community</dt><dd>@Model.Name</dd></div>
+                    <div><dt>District</dt><dd>@Model.District</dd></div>
+                    <div><dt>State</dt><dd>@Model.State</dd></div>
+                    <div>
+                        <dt>Approximate population</dt>
+                        <dd>
+                            @(Model.ApproximatePopulation?.ToString("N0") ?? "Not recorded")
+                            @if (Model.PopulationReferenceYear.HasValue)
+                            {
+                                <span>(@Model.PopulationReferenceYear)</span>
+                            }
+                        </dd>
+                    </div>
+                    <div>
+                        <dt>Registration date</dt>
+                        <dd>@Model.CreatedAtUtc.ToLocalTime().ToString("dd MMMM yyyy")</dd>
+                    </div>
+                    <div>
+                        <dt>Coordinates</dt>
+                        <dd>
+                            @(hasCoordinates
+                                ? $"{Model.Latitude:F5}, {Model.Longitude:F5}"
+                                : "Not recorded")
+                        </dd>
+                    </div>
+                </dl>
+            </article>
+
+            <article class="community-detail-card">
+                <span class="community-eyebrow">GEOGRAPHIC CONTEXT</span>
+                <h2>Location</h2>
+
+                @if (hasCoordinates)
+                {
+                    <div id="community-detail-map"></div>
+                    <p class="community-map-caption">OpenStreetMap · Registered coordinates</p>
+                }
+                else
+                {
+                    <div class="community-map-unavailable">
+                        <strong>Location not yet pinned</strong>
+                        <p>Geographic coordinates have not been recorded.</p>
+                    </div>
+                }
+            </article>
+        </div>
+    </section>
+
+    <!-- WATER SOURCES -->
+    <section class="community-tab-panel" data-panel="water" hidden>
+        <div class="community-panel-heading">
+            <div>
+                <span class="community-eyebrow">WATER INFRASTRUCTURE</span>
+                <h2>Registered water sources</h2>
+            </div>
+            <span>@Model.WaterSources.Count source(s)</span>
+        </div>
+
+        @if (Model.WaterSources.Count == 0)
+        {
+            <div class="community-tab-empty">
+                <strong>No water sources registered</strong>
+                <p>Registered water sources will appear here.</p>
+            </div>
+        }
+        else
+        {
+            <div class="community-table-wrap">
+                <table class="community-data-table">
+                    <thead>
+                        <tr>
+                            <th>Source</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Observations</th>
+                            <th>Last observed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var source in Model.WaterSources)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@source.Name</strong>
+                                <span class="table-subtext">Source #@source.Id</span>
+                            </td>
+                            <td>@source.SourceType</td>
+                            <td>
+                                <span class="community-status-pill @(source.IsActive ? "status-active" : "status-inactive")">
+                                    @(source.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </td>
+                            <td>@source.ObservationCount</td>
+                            <td>
+                                @(source.LastObservedAtUtc?.ToLocalTime()
+                                    .ToString("dd MMM yyyy, HH:mm") ?? "No observations")
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <!-- HEALTH REPORTS -->
+    <section class="community-tab-panel" data-panel="health" hidden>
+        <div class="community-panel-heading">
+            <div>
+                <span class="community-eyebrow">COMMUNITY HEALTH</span>
+                <h2>Aggregated health reports</h2>
+            </div>
+            <span>@Model.TotalReportedCases.ToString("N0") reported cases</span>
+        </div>
+
+        @if (Model.HealthReports.Count == 0)
+        {
+            <div class="community-tab-empty">
+                <strong>No health reports recorded</strong>
+                <p>Aggregated reports will appear here when submitted.</p>
+            </div>
+        }
+        else
+        {
+            <div class="community-table-wrap">
+                <table class="community-data-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Reported count</th>
+                            <th>Report date</th>
+                            <th>Source</th>
+                            <th>Verification</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var report in Model.HealthReports)
+                    {
+                        <tr>
+                            <td><strong>@report.Category</strong></td>
+                            <td>@report.ReportCount.ToString("N0")</td>
+                            <td>@report.ReportedAtUtc.ToLocalTime().ToString("dd MMM yyyy")</td>
+                            <td>@(report.Source ?? "Not specified")</td>
+                            <td>
+                                <span class="community-status-pill @(report.IsVerified ? "status-active" : "status-pending")">
+                                    @(report.IsVerified ? "Verified" : "Pending")
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <p class="community-data-note">
+            These are aggregated report counts, not individual patient records.
+        </p>
+    </section>
+
+    <!-- ALERTS -->
+    <section class="community-tab-panel" data-panel="alerts" hidden>
+        <div class="community-panel-heading">
+            <div>
+                <span class="community-eyebrow">EARLY WARNING SYSTEM</span>
+                <h2>Alert history</h2>
+            </div>
+            <span>@Model.TotalAlerts alert(s)</span>
+        </div>
+
+        @if (Model.Alerts.Count == 0)
+        {
+            <div class="community-tab-empty">
+                <strong>No alerts recorded</strong>
+                <p>Alerts associated with this community will appear here.</p>
+            </div>
+        }
+        else
+        {
+            <div class="community-alert-list">
+                @foreach (var alert in Model.Alerts)
+                {
+                    <article class="community-alert-item">
+                        <div class="community-alert-indicator severity-@alert.Severity.ToLowerInvariant()"></div>
+                        <div class="community-alert-content">
+                            <div class="community-alert-meta">
+                                <span class="community-severity-label">@alert.Severity</span>
+                                <span class="community-status-pill status-@alert.Status.ToLowerInvariant()">
+                                    @alert.Status
+                                </span>
+                                <time>@alert.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</time>
+                            </div>
+                            <h3>@alert.Title</h3>
+                            <p>@alert.Description</p>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.community-tab').forEach(button => {
+            button.addEventListener('click', () => {
+                const selected = button.dataset.tab;
+
+                document.querySelectorAll('.community-tab').forEach(tab => {
+                    const active = tab === button;
+                    tab.classList.toggle('is-active', active);
+                    tab.setAttribute('aria-selected', active ? 'true' : 'false');
+                });
+
+                document.querySelectorAll('.community-tab-panel').forEach(panel => {
+                    const active = panel.dataset.panel === selected;
+                    panel.hidden = !active;
+                    panel.classList.toggle('is-active', active);
+                });
+
+                if (selected === 'overview' && window.communityDetailMap) {
+                    setTimeout(() => window.communityDetailMap.invalidateSize(), 100);
+                }
+            });
+        });
+    </script>
+
+    @if (hasCoordinates)
+    {
+        <link rel="stylesheet"
+              href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+              integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+              crossorigin="" />
+
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+                integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+                crossorigin=""></script>
+
+        <script>
+            window.communityDetailMap = L.map('community-detail-map')
+                .setView([@Model.Latitude, @Model.Longitude], 12);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(window.communityDetailMap);
+
+            L.marker([@Model.Latitude, @Model.Longitude])
+                .addTo(window.communityDetailMap)
+                .bindPopup(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Name)));
+        </script>
+    }
+}

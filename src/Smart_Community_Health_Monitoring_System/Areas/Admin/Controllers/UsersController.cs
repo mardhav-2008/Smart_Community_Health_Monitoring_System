@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Smart_Community_Health_Monitoring_System.Areas.Admin.ViewModels;
 using Smart_Community_Health_Monitoring_System.Models.Identity;
+using Smart_Community_Health_Monitoring_System.Data;
 
 namespace Smart_Community_Health_Monitoring_System.Areas.Admin.Controllers;
 
@@ -13,10 +14,14 @@ namespace Smart_Community_Health_Monitoring_System.Areas.Admin.Controllers;
 public class UsersController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ApplicationDbContext _context;
 
-    public UsersController(UserManager<ApplicationUser> userManager)
+    public UsersController(
+        UserManager<ApplicationUser> userManager,
+        ApplicationDbContext context)
     {
         _userManager = userManager;
+        _context = context;
     }
 
     // GET: /Admin/Users
@@ -136,6 +141,7 @@ public class UsersController : Controller
     }
 
     // POST: /Admin/Users/Edit
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(EditUserViewModel model)
@@ -143,7 +149,8 @@ public class UsersController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        if (model.Role != "Administrator" && model.Role != "FieldWorker")
+        if (model.Role != "Administrator" &&
+            model.Role != "FieldWorker")
         {
             ModelState.AddModelError(
                 nameof(model.Role),
@@ -160,11 +167,12 @@ public class UsersController : Controller
         var currentUserId = _userManager.GetUserId(User);
         var isCurrentUser = currentUserId == user.Id;
 
-        var currentRoles = await _userManager.GetRolesAsync(user);
+        var currentRoles = (await _userManager.GetRolesAsync(user)).ToList();
         var currentlyAdmin = currentRoles.Contains("Administrator");
         var willBeAdmin = model.Role == "Administrator";
+        var wasActive = user.IsActive;
 
-        // Prevent administrators from locking themselves out.
+        // Prevent self-lockout.
         if (isCurrentUser && (!model.IsActive || !willBeAdmin))
         {
             ModelState.AddModelError(
@@ -175,7 +183,9 @@ public class UsersController : Controller
         }
 
         // Protect the last active administrator.
-        if (currentlyAdmin && (!willBeAdmin || !model.IsActive))
+        if (currentlyAdmin &&
+            user.IsActive &&
+            (!willBeAdmin || !model.IsActive))
         {
             var admins = await _userManager.GetUsersInRoleAsync(
                 "Administrator");
@@ -183,7 +193,7 @@ public class UsersController : Controller
             var otherActiveAdmins = admins.Count(admin =>
                 admin.Id != user.Id && admin.IsActive);
 
-            if (!model.IsActive || otherActiveAdmins == 0)
+            if (otherActiveAdmins == 0)
             {
                 ModelState.AddModelError(
                     string.Empty,
@@ -193,8 +203,8 @@ public class UsersController : Controller
             }
         }
 
-        // Prevent duplicate email addresses.
         var email = model.Email.Trim();
+
         var existingUser = await _userManager.FindByEmailAsync(email);
 
         if (existingUser != null && existingUser.Id != user.Id)
@@ -206,94 +216,125 @@ public class UsersController : Controller
             return View(model);
         }
 
-        var wasActive = user.IsActive;
-        var roleChanged = currentlyAdmin != willBeAdmin;
+        await using var transaction =
+            await _context.Database.BeginTransactionAsync();
 
-        var securitySensitiveChange =
-            roleChanged || wasActive != model.IsActive;
-
-        // Apply role changes and check the result.
-        if (roleChanged)
+        try
         {
-            var roleResult = willBeAdmin
-                ? await _userManager.AddToRoleAsync(user, "Administrator")
-                : await _userManager.RemoveFromRoleAsync(
-                    user,
-                    "Administrator");
+            // Update email through Identity.
+            var emailResult = await _userManager.SetEmailAsync(user, email);
 
-            if (!roleResult.Succeeded)
+            if (!emailResult.Succeeded)
             {
-                foreach (var error in roleResult.Errors)
-                    ModelState.AddModelError(
-                        string.Empty,
-                        error.Description);
+                foreach (var error in emailResult.Errors)
+                    ModelState.AddModelError(string.Empty, error.Description);
 
+                await transaction.RollbackAsync();
                 return View(model);
             }
-        }
 
-        // Update account properties.
-        user.DisplayName = model.DisplayName.Trim();
-        user.Email = email;
-        user.UserName = email;
-        user.IsActive = model.IsActive;
+            // Keep username synchronized with email.
+            var usernameResult = await _userManager.SetUserNameAsync(
+                user,
+                email);
 
-        var updateResult = await _userManager.UpdateAsync(user);
-
-        if (!updateResult.Succeeded)
-        {
-            // Roll back the role change if the account update fails.
-            if (roleChanged)
+            if (!usernameResult.Succeeded)
             {
-                var rollbackResult = currentlyAdmin
-                    ? await _userManager.AddToRoleAsync(
-                        user,
-                        "Administrator")
-                    : await _userManager.RemoveFromRoleAsync(
-                        user,
-                        "Administrator");
+                foreach (var error in usernameResult.Errors)
+                    ModelState.AddModelError(string.Empty, error.Description);
 
-                if (!rollbackResult.Succeeded)
+                await transaction.RollbackAsync();
+                return View(model);
+            }
+
+            user.DisplayName = model.DisplayName.Trim();
+            user.IsActive = model.IsActive;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+
+            if (!updateResult.Succeeded)
+            {
+                foreach (var error in updateResult.Errors)
+                    ModelState.AddModelError(string.Empty, error.Description);
+
+                await transaction.RollbackAsync();
+                return View(model);
+            }
+
+            // Ensure exactly one application role is assigned.
+            var rolesToRemove = currentRoles
+                .Where(role => role != model.Role)
+                .ToList();
+
+            foreach (var role in rolesToRemove)
+            {
+                var removeResult = await _userManager.RemoveFromRoleAsync(
+                    user,
+                    role);
+
+                if (!removeResult.Succeeded)
                 {
-                    foreach (var error in rollbackResult.Errors)
-                    {
-                        ModelState.AddModelError(
-                            string.Empty,
-                            $"Role rollback failed: {error.Description}");
-                    }
+                    foreach (var error in removeResult.Errors)
+                        ModelState.AddModelError(string.Empty, error.Description);
+
+                    await transaction.RollbackAsync();
+                    return View(model);
                 }
             }
 
-            foreach (var error in updateResult.Errors)
-                ModelState.AddModelError(
-                    string.Empty,
-                    error.Description);
+            if (!currentRoles.Contains(model.Role))
+            {
+                var addResult = await _userManager.AddToRoleAsync(
+                    user,
+                    model.Role);
+
+                if (!addResult.Succeeded)
+                {
+                    foreach (var error in addResult.Errors)
+                        ModelState.AddModelError(string.Empty, error.Description);
+
+                    await transaction.RollbackAsync();
+                    return View(model);
+                }
+            }
+
+            var securitySensitiveChange =
+                currentlyAdmin != willBeAdmin ||
+                wasActive != model.IsActive;
+
+            // Revoke existing authentication sessions after security changes.
+            if (securitySensitiveChange)
+            {
+                var stampResult =
+                    await _userManager.UpdateSecurityStampAsync(user);
+
+                if (!stampResult.Succeeded)
+                {
+                    foreach (var error in stampResult.Errors)
+                        ModelState.AddModelError(string.Empty, error.Description);
+
+                    await transaction.RollbackAsync();
+                    return View(model);
+                }
+            }
+
+            await transaction.CommitAsync();
+
+            TempData["SuccessMessage"] =
+                $"Updated account for {user.DisplayName}.";
+
+            return RedirectToAction(nameof(Index));
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+
+            ModelState.AddModelError(
+                string.Empty,
+                "An unexpected error occurred while updating the account.");
 
             return View(model);
         }
-
-        // Invalidate existing sessions after role/status changes.
-        if (securitySensitiveChange)
-        {
-            var stampResult =
-                await _userManager.UpdateSecurityStampAsync(user);
-
-            if (!stampResult.Succeeded)
-            {
-                foreach (var error in stampResult.Errors)
-                {
-                    ModelState.AddModelError(
-                        string.Empty,
-                        error.Description);
-                }
-
-                return View(model);
-            }
-        }
-
-        TempData["SuccessMessage"] =
-            $"Updated account for {user.DisplayName}.";
-
-        return RedirectToAction(nameof(Index));
     }
+
 }

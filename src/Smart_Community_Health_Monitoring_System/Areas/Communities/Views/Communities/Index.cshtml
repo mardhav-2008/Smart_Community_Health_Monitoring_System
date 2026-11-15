@@ -1,0 +1,214 @@
+@model CommunityDirectoryViewModel
+
+@{
+    ViewData["Title"] = "Community Registry";
+}
+
+<section class="dashboard-page community-directory">
+    <div class="dashboard-container">
+
+        <div class="dashboard-heading">
+            <div>
+                <p class="eyebrow">COMMUNITY INTELLIGENCE / REGISTRY</p>
+                <h1>Communities</h1>
+                <p>
+                    Explore the communities participating in the
+                    water and public health monitoring network.
+                </p>
+            </div>
+
+            <a asp-area="Communities"
+               asp-controller="Communities"
+               asp-action="Create"
+               class="btn btn-primary">
+                + Register community
+            </a>
+        </div>
+
+        <div class="community-stat-grid">
+            <div class="glass community-stat">
+                <span>ACTIVE COMMUNITIES</span>
+                <strong>@Model.ActiveCommunities</strong>
+            </div>
+
+            <div class="glass community-stat">
+                <span>ARCHIVED COMMUNITIES</span>
+                <strong>@Model.ArchivedCommunities</strong>
+            </div>
+
+            <div class="glass community-stat">
+                <span>MATCHING RESULTS</span>
+                <strong>@Model.TotalCommunities</strong>
+            </div>
+        </div>
+
+        <form method="get"
+              asp-area="Communities"
+              asp-controller="Communities"
+              asp-action="Index"
+              class="glass community-filters">
+
+            <div class="community-filter-search">
+                <label for="search">Search communities</label>
+                <input id="search"
+                       name="search"
+                       value="@Model.SearchTerm"
+                       placeholder="Name, district or state..." />
+            </div>
+
+            <div>
+                <label for="state">State</label>
+                <select id="state" name="state">
+                    <option value="">All states</option>
+                    @foreach (var state in Model.AvailableStates)
+                    {
+                        <option value="@state"
+                                selected="@(Model.SelectedState == state)">
+                            @state
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div>
+                <label for="district">District</label>
+                <select id="district" name="district">
+                    <option value="">All districts</option>
+                    @foreach (var district in Model.AvailableDistricts)
+                    {
+                        <option value="@district"
+                                selected="@(Model.SelectedDistrict == district)">
+                            @district
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div>
+                <label for="sortBy">Sort by</label>
+                <select id="sortBy" name="sortBy">
+                    <option value="name" selected="@(Model.SortBy == "name")">
+                        Name
+                    </option>
+                    <option value="population" selected="@(Model.SortBy == "population")">
+                        Population
+                    </option>
+                    <option value="date" selected="@(Model.SortBy == "date")">
+                        Registration date
+                    </option>
+                </select>
+            </div>
+
+            <input type="hidden" name="descending" value="@Model.SortDescending" />
+
+            @if (User.IsInRole("Administrator"))
+            {
+                <label class="community-archive-filter">
+                    <input type="checkbox"
+                           name="archived"
+                           value="true"
+                           checked="@Model.ShowArchived" />
+                    Show archived
+                </label>
+            }
+
+            <button type="submit" class="btn btn-primary">
+                Apply filters
+            </button>
+
+            <a asp-area="Communities"
+               asp-controller="Communities"
+               asp-action="Index"
+               class="community-reset">
+                Clear filters
+            </a>
+        </form>
+
+        <div class="community-results-heading">
+            <div>
+                <p class="eyebrow">DIRECTORY</p>
+                <h2>
+                    @(Model.ShowArchived ? "Archived communities" : "Registered communities")
+                </h2>
+            </div>
+
+            <span>@Model.TotalCommunities communities</span>
+        </div>
+
+        @if (Model.Communities.Count == 0)
+        {
+            <div class="glass community-empty">
+                <h3>No communities found</h3>
+                <p>Try changing your search or filters.</p>
+            </div>
+        }
+        else
+        {
+            <div class="community-grid">
+                @foreach (var community in Model.Communities)
+                {
+                    <article class="glass community-card">
+                        <div class="community-card-top">
+                            <span class="community-location">
+                                @community.District, @community.State
+                            </span>
+                            <span class="community-status">REGISTERED</span>
+                        </div>
+
+                        <h3>@community.Name</h3>
+
+                        <p>
+                            @(community.ApproximatePopulation.HasValue
+                                ? $"Approx. {community.ApproximatePopulation.Value:N0} residents"
+                                : "Population information unavailable")
+                        </p>
+
+                        @if (community.PopulationReferenceYear.HasValue)
+                        {
+                            <small>
+                                Population reference:
+                                @community.PopulationReferenceYear
+                            </small>
+                        }
+
+                        <div class="community-card-footer">
+                            <span>
+                                Registered
+                                @community.CreatedAtUtc.ToString("dd MMM yyyy")
+                            </span>
+
+                            <a asp-area="Communities"
+                               asp-controller="Communities"
+                               asp-action="Details"
+                               asp-route-id="@community.Id">
+                                Explore →
+                            </a>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+
+        @if (Model.HasMore)
+        {
+            <div class="community-load-more">
+                <a class="btn btn-outline-secondary"
+                   asp-area="Communities"
+                   asp-controller="Communities"
+                   asp-action="Index"
+                   asp-route-search="@Model.SearchTerm"
+                   asp-route-state="@Model.SelectedState"
+                   asp-route-district="@Model.SelectedDistrict"
+                   asp-route-minPopulation="@Model.MinimumPopulation"
+                   asp-route-maxPopulation="@Model.MaximumPopulation"
+                   asp-route-archived="@Model.ShowArchived"
+                   asp-route-sortBy="@Model.SortBy"
+                   asp-route-descending="@Model.SortDescending"
+                   asp-route-page="@(Model.CurrentPage + 1)">
+                    Load more communities
+                </a>
+            </div>
+        }
+
+    </div>
+</section>

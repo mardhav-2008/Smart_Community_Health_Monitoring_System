@@ -1,0 +1,215 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - Community Health Initiative</title>
+
+    <meta name="theme-color" content="#172d29" />
+    <meta name="description"
+          content="Connecting environmental monitoring, community health information and early-warning capabilities for rural communities." />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap"
+    rel="stylesheet" />
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+
+<body>
+    <header class="site-header">
+        <nav class="liquid-navbar glass" aria-label="Main navigation">
+
+            <a class="brand" href="#home" aria-label="Community Health Initiative home">
+                <span class="brand-mark">C</span>
+
+                <span class="brand-text">
+                    <strong>COMMUNITY HEALTH</strong>
+                    <small>MONITORING INITIATIVE</small>
+                </span>
+            </a>
+
+            <div class="nav-links" id="navigation-links">
+                <a href="/#mission">Our mission</a>
+                <a href="/Monitoring">Monitoring</a>
+                <a href="/#approach">Our approach</a>
+                <a href="/#contact">Contact</a>
+            </div>
+
+            <a href="/Monitoring" class="nav-cta glass">
+                Explore platform
+                <span>↗</span>
+            </a>
+
+            <button class="menu-toggle" type="button" aria-label="Toggle navigation" aria-controls="navigation-links"
+                    aria-expanded="false">
+                <span></span>
+                <span></span>
+            </button>
+
+        </nav>
+    </header>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer" id="contact">
+        <div class="footer-main">
+            <div>
+                <span class="footer-eyebrow">COMMUNITY HEALTH INITIATIVE</span>
+                <h2>Health begins with what we understand.</h2>
+            </div>
+
+            <a href="#home" class="footer-top-link">
+                Back to top ↑
+            </a>
+        </div>
+
+        <div class="footer-bottom">
+            <span>WATER · HEALTH · COMMUNITY</span>
+            <span>ACADEMIC PROJECT · PROTOTYPE</span>
+        </div>
+    </footer>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+<script>
+/* ADAPTIVE-LIQUID-GLASS-SCRIPT */
+(() => {
+    const navbar = document.querySelector('.liquid-navbar');
+    if (!navbar) return;
+
+    const parseColor = value => {
+        const match = value.match(
+            /rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:\s*[,/]\s*([\d.]+))?\s*\)/i
+        );
+
+        if (!match) return null;
+
+        return {
+            r: Number(match[1]),
+            g: Number(match[2]),
+            b: Number(match[3]),
+            a: match[4] === undefined ? 1 : Number(match[4])
+        };
+    };
+
+    const luminance = ({r, g, b}) => {
+        const channels = [r, g, b].map(v => {
+            v /= 255;
+            return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4;
+        });
+
+        return .2126 * channels[0] +
+               .7152 * channels[1] +
+               .0722 * channels[2];
+    };
+
+    function backgroundAt(x, y) {
+        const previous = navbar.style.pointerEvents;
+        navbar.style.pointerEvents = 'none';
+
+        const elements = document.elementsFromPoint(x, y);
+        navbar.style.pointerEvents = previous;
+
+        for (const element of elements) {
+            if (navbar.contains(element) || element === navbar) continue;
+
+            let current = element;
+
+            while (current && current !== document.documentElement) {
+                const style = getComputedStyle(current);
+                const color = parseColor(style.backgroundColor);
+
+                if (color && color.a > .85) {
+                    return luminance(color);
+                }
+
+                current = current.parentElement;
+            }
+        }
+
+        const bodyColor = parseColor(getComputedStyle(document.body).backgroundColor);
+        if (bodyColor && bodyColor.a > .85) return luminance(bodyColor);
+
+        return .5;
+    }
+
+    let previousDark = null;
+
+    function updateNavbarTheme() {
+        const rect = navbar.getBoundingClientRect();
+
+        const samples = [
+            [rect.left + rect.width * .2, rect.top + rect.height * .5],
+            [rect.left + rect.width * .5, rect.top + rect.height * .5],
+            [rect.left + rect.width * .8, rect.top + rect.height * .5]
+        ];
+
+        const average = samples.reduce(
+            (total, [x, y]) => total + backgroundAt(
+                Math.max(0, Math.min(innerWidth - 1, x)),
+                Math.max(0, Math.min(innerHeight - 1, y))
+            ),
+            0
+        ) / samples.length;
+
+        // Hysteresis prevents flickering near the brightness threshold.
+        let dark;
+
+        if (previousDark === null) {
+            dark = average > .48;
+        } else {
+            dark = previousDark ? average > .40 : average > .56;
+        }
+
+        if (dark !== previousDark) {
+            navbar.classList.toggle('is-dark-glass', dark);
+            navbar.classList.toggle('is-light-glass', !dark);
+            previousDark = dark;
+        }
+    }
+
+    let scheduled = false;
+
+    function scheduleUpdate() {
+        if (scheduled) return;
+        scheduled = true;
+
+        requestAnimationFrame(() => {
+            updateNavbarTheme();
+            scheduled = false;
+        });
+    }
+
+    window.addEventListener('scroll', scheduleUpdate, {passive: true});
+    window.addEventListener('resize', scheduleUpdate, {passive: true});
+
+    if ('ResizeObserver' in window) {
+        new ResizeObserver(scheduleUpdate).observe(navbar);
+    }
+
+    if ('MutationObserver' in window) {
+        new MutationObserver(scheduleUpdate).observe(document.body, {
+            attributes: true,
+            childList: true,
+            subtree: true,
+            attributeFilter: ['class', 'style']
+        });
+    }
+
+    updateNavbarTheme();
+    window.addEventListener('load', scheduleUpdate);
+})();
+</script>
+
+</body>
+
+</html>

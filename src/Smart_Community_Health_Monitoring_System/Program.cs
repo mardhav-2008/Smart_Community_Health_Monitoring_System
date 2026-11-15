@@ -1,9 +1,9 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication;
 using Smart_Community_Health_Monitoring_System.Data;
 using Smart_Community_Health_Monitoring_System.Models.Identity;
-using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,35 +42,52 @@ builder.Services
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-
+// Authentication cookie configuration.
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Identity/Account/Login";
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+
     options.Cookie.Name = "CommunityHealth.Auth";
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
+
     options.SlidingExpiration = true;
     options.ExpireTimeSpan = TimeSpan.FromHours(8);
 
     options.Events.OnValidatePrincipal = async context =>
     {
+        // Validate the Identity security stamp.
+        await SecurityStampValidator.ValidatePrincipalAsync(context);
+
+        // Stop if Identity has already rejected the principal.
+        if (context.Principal?.Identity?.IsAuthenticated != true)
+            return;
+
         var userManager = context.HttpContext.RequestServices
             .GetRequiredService<UserManager<ApplicationUser>>();
 
-        var user = await userManager.GetUserAsync(context.Principal!);
+        var user = await userManager.GetUserAsync(context.Principal);
 
+        // Reject deleted or deactivated accounts.
         if (user == null || !user.IsActive)
         {
             context.RejectPrincipal();
 
             await context.HttpContext.SignOutAsync(
-                IdentityConstants.ApplicationScheme);
+                IdentityConstants.ApplicationScheme
+            );
         }
     };
 });
 
+// Security stamp validation frequency.
+builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+{
+    options.ValidationInterval = TimeSpan.FromMinutes(1);
+});
 
+// Authorization policies.
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdministratorOnly", policy =>
@@ -91,7 +108,7 @@ using (var scope = app.Services.CreateScope())
     await IdentitySeeder.SeedRolesAsync(roleManager);
 }
 
-
+// Initial administrator setup.
 if (args.Contains("--setup-admin"))
 {
     using var scope = app.Services.CreateScope();
@@ -163,7 +180,8 @@ if (args.Contains("--setup-admin"))
 
             Console.WriteLine();
             Console.WriteLine(
-                "Administrator account created successfully.");
+                "Administrator account created successfully."
+            );
 
             break;
         }
@@ -194,7 +212,7 @@ if (args.Contains("--setup-admin"))
     return;
 }
 
-
+// Development-only sample data.
 if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
@@ -205,6 +223,7 @@ if (app.Environment.IsDevelopment())
     await DevelopmentDataSeeder.SeedAsync(context);
 }
 
+// Production error handling.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -221,11 +240,13 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "areas",
-    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
+);
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}"
+);
 
 app.MapRazorPages();
 
@@ -248,17 +269,13 @@ static string ReadPassword()
         if (key.Key == ConsoleKey.Backspace)
         {
             if (password.Length > 0)
-            {
                 password.Length--;
-            }
 
             continue;
         }
 
         if (!char.IsControl(key.KeyChar))
-        {
             password.Append(key.KeyChar);
-        }
     }
 
     return password.ToString();
