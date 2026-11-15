@@ -24,6 +24,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<ApplicationUser>(entity =>
+        {
+            entity.Property(user => user.IsActive)
+                .HasDefaultValue(true);
+
+            entity.Property(user => user.CreatedAtUtc)
+                .IsRequired(false);
+        });
+
         modelBuilder.Entity<Community>(entity =>
         {
             entity.Property(x => x.Name).HasMaxLength(150).IsRequired();

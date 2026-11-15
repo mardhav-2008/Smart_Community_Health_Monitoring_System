@@ -1,4 +1,5 @@
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Smart_Community_Health_Monitoring_System.Data;
@@ -7,6 +8,7 @@ using Smart_Community_Health_Monitoring_System.Models.Entities;
 
 namespace Smart_Community_Health_Monitoring_System.Controllers;
 
+[Authorize(Policy = "FieldWorkerOrAdministrator")]
 public class MonitoringController : Controller
 {
     private readonly ApplicationDbContext _context;
