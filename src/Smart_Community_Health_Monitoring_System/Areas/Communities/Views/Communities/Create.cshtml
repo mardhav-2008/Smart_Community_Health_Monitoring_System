@@ -1,0 +1,248 @@
+@model CommunityCreateViewModel
+
+@{
+    ViewData["Title"] = "Register Community";
+}
+
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""/>
+
+<section class="dashboard-page community-directory">
+    <div class="dashboard-container">
+
+        <div class="dashboard-heading">
+            <div>
+                <p class="eyebrow">COMMUNITY INTELLIGENCE / REGISTRY</p>
+                <h1>Register a community</h1>
+                <p>
+                    Add a community to the water and public health
+                    monitoring network.
+                </p>
+            </div>
+        </div>
+
+        <form asp-area="Communities"
+              asp-controller="Communities"
+              asp-action="Create"
+              method="post"
+              class="community-form">
+
+            <div asp-validation-summary="ModelOnly"
+                 class="community-validation"></div>
+
+            <section class="glass community-form-section">
+                <p class="eyebrow">01 / BASIC INFORMATION</p>
+                <h2>Community identity</h2>
+
+                <div class="community-form-grid">
+                    <div class="community-field full-width">
+                        <label asp-for="Name">Community name *</label>
+                        <input asp-for="Name"
+                               placeholder="e.g. Riverbend Community"/>
+                        <span asp-validation-for="Name"></span>
+                    </div>
+
+                    <div class="community-field">
+                        <label asp-for="State">State *</label>
+                        <input asp-for="State"
+                               placeholder="e.g. Assam"/>
+                        <span asp-validation-for="State"></span>
+                    </div>
+
+                    <div class="community-field">
+                        <label asp-for="District">District *</label>
+                        <input asp-for="District"
+                               placeholder="e.g. Kamrup"/>
+                        <span asp-validation-for="District"></span>
+                    </div>
+
+                    <div class="community-field full-width">
+                        <label asp-for="Description">Description</label>
+                        <textarea asp-for="Description"
+                                  rows="4"
+                                  placeholder="Briefly describe the community..."></textarea>
+                        <span asp-validation-for="Description"></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="glass community-form-section">
+                <p class="eyebrow">02 / DEMOGRAPHIC REFERENCE</p>
+                <h2>Population information</h2>
+
+                <p class="community-form-hint">
+                    Provide an approximate population and the year
+                    associated with that estimate.
+                </p>
+
+                <div class="community-form-grid">
+                    <div class="community-field">
+                        <label asp-for="ApproximatePopulation">
+                            Approximate population
+                        </label>
+                        <input asp-for="ApproximatePopulation"
+                               type="number"
+                               min="1"
+                               placeholder="e.g. 4500"/>
+                        <span asp-validation-for="ApproximatePopulation"></span>
+                    </div>
+
+                    <div class="community-field">
+                        <label asp-for="PopulationReferenceYear">
+                            Reference year
+                        </label>
+                        <input asp-for="PopulationReferenceYear"
+                               type="number"
+                               min="1900"
+                               max="2100"
+                               placeholder="e.g. 2021"/>
+                        <span asp-validation-for="PopulationReferenceYear"></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="glass community-form-section">
+                <p class="eyebrow">03 / GEOGRAPHIC LOCATION</p>
+                <h2>Locate the community</h2>
+
+                <p class="community-form-hint">
+                    Select a location on the map to populate its coordinates.
+                    You can also enter them manually.
+                </p>
+
+                <div id="community-map"></div>
+
+                <div class="community-form-grid coordinate-grid">
+                    <div class="community-field">
+                        <label asp-for="Latitude">Latitude</label>
+                        <input asp-for="Latitude"
+                               type="number"
+                               step="any"
+                               min="-90"
+                               max="90"
+                               placeholder="e.g. 26.1445"/>
+                        <span asp-validation-for="Latitude"></span>
+                    </div>
+
+                    <div class="community-field">
+                        <label asp-for="Longitude">Longitude</label>
+                        <input asp-for="Longitude"
+                               type="number"
+                               step="any"
+                               min="-180"
+                               max="180"
+                               placeholder="e.g. 91.7362"/>
+                        <span asp-validation-for="Longitude"></span>
+                    </div>
+                </div>
+
+                <button type="button"
+                        id="clear-location"
+                        class="community-text-button">
+                    Clear selected location
+                </button>
+            </section>
+
+            <div class="community-form-actions">
+                <a asp-area="Communities"
+                   asp-controller="Communities"
+                   asp-action="Index"
+                   class="community-secondary-button">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                        class="community-primary-button">
+                    Register community
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const latitudeInput = document.getElementById("Latitude");
+            const longitudeInput = document.getElementById("Longitude");
+            const clearButton = document.getElementById("clear-location");
+
+            // Initial view: Northeast India.
+            const map = L.map("community-map").setView([26.2, 92.9], 6);
+
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+
+            let marker = null;
+
+            function updateMarker(lat, lng, moveMap) {
+                latitudeInput.value = Number(lat).toFixed(7);
+                longitudeInput.value = Number(lng).toFixed(7);
+
+                if (marker) {
+                    marker.setLatLng([lat, lng]);
+                } else {
+                    marker = L.marker([lat, lng]).addTo(map);
+                }
+
+                if (moveMap) {
+                    map.setView([lat, lng], 13);
+                }
+            }
+
+            map.on("click", function (event) {
+                updateMarker(
+                    event.latlng.lat,
+                    event.latlng.lng,
+                    false
+                );
+            });
+
+            function updateFromInputs() {
+                const lat = Number(latitudeInput.value);
+                const lng = Number(longitudeInput.value);
+
+                if (
+                    latitudeInput.value === "" ||
+                    longitudeInput.value === "" ||
+                    !Number.isFinite(lat) ||
+                    !Number.isFinite(lng) ||
+                    lat < -90 || lat > 90 ||
+                    lng < -180 || lng > 180
+                ) {
+                    return;
+                }
+
+                updateMarker(lat, lng, true);
+            }
+
+            latitudeInput.addEventListener("change", updateFromInputs);
+            longitudeInput.addEventListener("change", updateFromInputs);
+
+            clearButton.addEventListener("click", function () {
+                latitudeInput.value = "";
+                longitudeInput.value = "";
+
+                if (marker) {
+                    map.removeLayer(marker);
+                    marker = null;
+                }
+            });
+
+            // Restore the marker if validation returned the form.
+            if (latitudeInput.value && longitudeInput.value) {
+                updateFromInputs();
+            }
+        });
+    </script>
+}

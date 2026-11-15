@@ -35,9 +35,29 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
         modelBuilder.Entity<Community>(entity =>
         {
-            entity.Property(x => x.Name).HasMaxLength(150).IsRequired();
-            entity.Property(x => x.District).HasMaxLength(150).IsRequired();
-            entity.Property(x => x.State).HasMaxLength(100).IsRequired();
+            entity.Property(x => x.Name)
+                .HasMaxLength(150)
+                .IsRequired();
+
+            entity.Property(x => x.District)
+                .HasMaxLength(150)
+                .IsRequired();
+
+            entity.Property(x => x.State)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(x => x.Description)
+                .HasMaxLength(1000);
+
+            entity.Property(x => x.Latitude)
+                .HasPrecision(10, 7);
+
+            entity.Property(x => x.Longitude)
+                .HasPrecision(10, 7);
+
+            entity.HasIndex(x => new { x.State, x.District });
+            entity.HasIndex(x => x.IsArchived);
         });
 
         modelBuilder.Entity<WaterSource>(entity =>

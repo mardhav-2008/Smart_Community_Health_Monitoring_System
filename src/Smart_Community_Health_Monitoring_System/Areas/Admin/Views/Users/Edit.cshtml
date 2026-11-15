@@ -1,0 +1,74 @@
+@model Smart_Community_Health_Monitoring_System.Areas.Admin.ViewModels.EditUserViewModel
+
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<section class="dashboard-page">
+    <div class="dashboard-container">
+        <div class="dashboard-heading">
+            <div>
+                <p class="eyebrow">ADMINISTRATION</p>
+                <h1>Edit user</h1>
+                <p>Manage account details, permissions and access.</p>
+            </div>
+        </div>
+
+        <div class="glass" style="max-width: 680px; padding: 2rem; border-radius: 20px;">
+            <form asp-area="Admin" asp-controller="Users" asp-action="Edit" method="post">
+
+                <div asp-validation-summary="ModelOnly" class="validation-summary text-danger"></div>
+
+                <input asp-for="Id" type="hidden" />
+
+                <div class="form-group mb-3">
+                    <label asp-for="DisplayName" class="form-label">
+                        Display name
+                    </label>
+                    <input asp-for="DisplayName" class="form-control" autocomplete="name" />
+                    <span asp-validation-for="DisplayName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Email" class="form-label">
+                        Email address
+                    </label>
+                    <input asp-for="Email" class="form-control" type="email" autocomplete="email" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Role" class="form-label">
+                        Account role
+                    </label>
+                    <select asp-for="Role" class="form-select">
+                        <option value="FieldWorker">Field Worker</option>
+                        <option value="Administrator">Administrator</option>
+                    </select>
+                    <span asp-validation-for="Role" class="text-danger"></span>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input asp-for="IsActive" class="form-check-input" />
+                    <label asp-for="IsActive" class="form-check-label">
+                        Account is active
+                    </label>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        Save changes
+                    </button>
+
+                    <a asp-area="Admin" asp-controller="Users" asp-action="Index" class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
