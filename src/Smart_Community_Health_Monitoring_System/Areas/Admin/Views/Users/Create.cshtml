@@ -1,0 +1,71 @@
+@model Smart_Community_Health_Monitoring_System.Areas.Admin.ViewModels.CreateUserViewModel
+
+@{
+    ViewData["Title"] = "Create User";
+}
+
+<section class="dashboard-page">
+    <div class="dashboard-container">
+        <div class="dashboard-heading">
+            <div>
+                <p class="eyebrow">ADMINISTRATION</p>
+                <h1>Create user</h1>
+                <p>Register a new administrator or field worker.</p>
+            </div>
+        </div>
+
+        <div class="glass dashboard-card">
+            <form asp-area="Admin" asp-controller="Users" asp-action="Create" method="post">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="form-group">
+                    <label asp-for="DisplayName">Display name</label>
+                    <input asp-for="DisplayName" />
+                    <span asp-validation-for="DisplayName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Email">Email address</label>
+                    <input asp-for="Email" type="email" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Role">Account role</label>
+                    <select asp-for="Role">
+                        <option value="FieldWorker">Field Worker</option>
+                        <option value="Administrator">Administrator</option>
+                    </select>
+                    <span asp-validation-for="Role" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Password">Password</label>
+                    <input asp-for="Password" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ConfirmPassword">Confirm password</label>
+                    <input asp-for="ConfirmPassword" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        Create account
+                    </button>
+
+                    <a asp-action="Index" asp-controller="Users" asp-area="Admin">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

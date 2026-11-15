@@ -1,0 +1,65 @@
+@model IEnumerable<Smart_Community_Health_Monitoring_System.Areas.Admin.ViewModels.UserListViewModel>
+
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<section class="dashboard-page">
+    <div class="dashboard-container">
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="success-message" role="status">
+                @successMessage
+            </div>
+        }
+        <div class="dashboard-heading">
+            <div>
+                <p class="eyebrow">ADMINISTRATION</p>
+                <h1>User Management</h1>
+                <p>Manage administrator and field-worker accounts.</p>
+            </div>
+
+            <a asp-area="Admin" asp-controller="Users" asp-action="Create" class="btn-primary">
+                Create user
+            </a>
+        </div>
+
+        <div class="glass dashboard-card">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>@user.DisplayName</td>
+                                <td>@user.Email</td>
+                                <td>@user.Role</td>
+                                <td>@(user.IsActive ? "Active" : "Inactive")</td>
+                                <td>
+                                    @(user.CreatedAtUtc == DateTime.MinValue
+                                        ? "Not recorded"
+                                        : user.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy"))
+                                </td>
+                                <td>
+                                    <a asp-area="Admin" asp-controller="Users" asp-action="Edit" asp-route-id="@user.Id">
+                                        Edit
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>

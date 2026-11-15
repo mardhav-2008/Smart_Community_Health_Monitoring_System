@@ -10,13 +10,16 @@ public class LoginModel : PageModel
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ILogger<LoginModel> _logger;
+    private readonly UserManager<ApplicationUser> _userManager;
 
     public LoginModel(
         SignInManager<ApplicationUser> signInManager,
-        ILogger<LoginModel> logger)
+        ILogger<LoginModel> logger,
+        UserManager<ApplicationUser> userManager)
     {
         _signInManager = signInManager;
         _logger = logger;
+        _userManager = userManager;
     }
 
     [BindProperty]
@@ -42,6 +45,7 @@ public class LoginModel : PageModel
         ReturnUrl = returnUrl ?? Url.Content("~/Monitoring");
     }
 
+
     public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
     {
         ReturnUrl = returnUrl ?? Url.Content("~/Monitoring");
@@ -49,8 +53,19 @@ public class LoginModel : PageModel
         if (!ModelState.IsValid)
             return Page();
 
+        var user = await _userManager.FindByEmailAsync(Input.Email);
+
+        if (user == null || !user.IsActive)
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                "Invalid email or password.");
+
+            return Page();
+        }
+
         var result = await _signInManager.PasswordSignInAsync(
-            Input.Email,
+            user,
             Input.Password,
             Input.RememberMe,
             lockoutOnFailure: true);
@@ -76,4 +91,5 @@ public class LoginModel : PageModel
 
         return Page();
     }
+
 }

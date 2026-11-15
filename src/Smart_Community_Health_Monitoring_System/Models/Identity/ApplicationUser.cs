@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Identity;
 
 namespace Smart_Community_Health_Monitoring_System.Models.Identity;
@@ -6,4 +5,8 @@ namespace Smart_Community_Health_Monitoring_System.Models.Identity;
 public class ApplicationUser : IdentityUser
 {
     public string? DisplayName { get; set; }
+
+    public bool IsActive { get; set; } = true;
+
+    public DateTime? CreatedAtUtc { get; set; } = DateTime.UtcNow;
 }
