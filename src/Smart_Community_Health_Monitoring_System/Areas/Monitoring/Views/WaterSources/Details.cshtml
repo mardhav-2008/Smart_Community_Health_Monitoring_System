@@ -1,0 +1,7 @@
+@model WaterSource
+@{ ViewData["Title"] = Model.Name; }
+<div class="container py-4"><a asp-action="Index">← Water sources</a><h1 class="mt-2">@Model.Name</h1><p class="text-muted">@Model.SourceType · @Model.Community.Name · @(Model.IsActive ? "Active" : "Inactive")</p>
+<p>@Model.Description</p><a class="btn btn-primary" asp-action="RecordObservation" asp-route-id="@Model.Id">Record observation</a>
+<h2 class="h4 mt-4">Observations</h2><div class="table-responsive"><table class="table"><thead><tr><th>Parameter</th><th>Value</th><th>Observed (UTC)</th><th>Validation</th></tr></thead><tbody>
+@foreach(var o in Model.Observations.OrderByDescending(x=>x.ObservedAtUtc)){<tr><td>@o.Parameter</td><td>@o.Value @o.Unit</td><td>@o.ObservedAtUtc.ToString("yyyy-MM-dd HH:mm")</td><td>@(o.IsValidated ? "Validated" : "Pending")</td></tr>}
+</tbody></table></div></div>

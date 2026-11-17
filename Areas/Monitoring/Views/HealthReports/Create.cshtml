@@ -1,0 +1,10 @@
+@model HealthReport
+@{ ViewData["Title"] = "Submit Health Report"; }
+<div class="container py-4"><h1>Submit Aggregated Health Report</h1><form asp-action="Create" method="post" class="card card-body gap-3">
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div><label asp-for="CommunityId" class="form-label">Community</label><select asp-for="CommunityId" asp-items="ViewBag.Communities" class="form-select"><option value="">Choose community</option></select></div>
+<div><label asp-for="Category" class="form-label">Report category</label><select asp-for="Category" class="form-select"><option value="">Choose category</option><option>Acute Diarrhoeal Disease</option><option>Cholera-like illness</option><option>Typhoid-like illness</option><option>Hepatitis A/E-like illness</option><option>Other</option></select></div>
+<div><label asp-for="ReportCount" class="form-label">Aggregated case count</label><input asp-for="ReportCount" class="form-control" type="number" min="1" required/></div>
+<div><label asp-for="ReportedAtUtc" class="form-label">Report date/time (UTC)</label><input asp-for="ReportedAtUtc" class="form-control" type="datetime-local" value="@Model.ReportedAtUtc.ToString("yyyy-MM-ddTHH:mm")"/></div>
+<div><label asp-for="Source" class="form-label">Source / notes</label><input asp-for="Source" class="form-control" maxlength="100"/></div>
+<p class="small text-muted">Submit aggregated counts only. Reports are pending administrator verification.</p><button class="btn btn-primary">Submit report</button></form></div>

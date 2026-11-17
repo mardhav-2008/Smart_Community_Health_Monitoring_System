@@ -1,0 +1,8 @@
+@model IEnumerable<HealthReport>
+@{ ViewData["Title"] = "Health Reports"; }
+<div class="container py-4"><h1>Community Health Reports</h1><p class="text-muted">Aggregated case counts submitted by field workers.</p>
+<a class="btn btn-primary mb-3" asp-action="Create">Submit report</a>
+<form method="get" class="d-flex gap-2 mb-3"><input name="search" class="form-control" placeholder="Search community or category" value="@Context.Request.Query["search"]"/><button class="btn btn-outline-secondary">Search</button></form>
+<div class="table-responsive"><table class="table"><thead><tr><th>Community</th><th>Category</th><th>Count</th><th>Reported</th><th>Verification</th><th></th></tr></thead><tbody>
+@foreach(var x in Model){<tr><td>@x.Community.Name</td><td>@x.Category</td><td>@x.ReportCount</td><td>@x.ReportedAtUtc.ToString("yyyy-MM-dd")</td><td>@(x.IsVerified ? "Verified" : "Pending")</td><td>@if(!x.IsVerified && User.IsInRole("Administrator")){<form asp-action="Verify" asp-route-id="@x.Id" method="post"><button class="btn btn-sm btn-outline-success">Verify</button></form>}</td></tr>}
+</tbody></table></div></div>
