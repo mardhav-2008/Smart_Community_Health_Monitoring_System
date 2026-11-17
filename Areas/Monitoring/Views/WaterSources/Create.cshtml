@@ -1,0 +1,11 @@
+@model WaterSource
+@{ ViewData["Title"] = "Register Water Source"; }
+<div class="container py-4"><h1>Register Water Source</h1>
+<form asp-action="Create" method="post" class="card card-body gap-3">
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div><label asp-for="Name" class="form-label">Source name</label><input asp-for="Name" class="form-control" required maxlength="150"/><span asp-validation-for="Name" class="text-danger"></span></div>
+<div><label asp-for="SourceType" class="form-label">Source type</label><select asp-for="SourceType" class="form-select"><option value="">Choose type</option><option>Well</option><option>Borewell</option><option>Hand Pump</option><option>River</option><option>Spring</option><option>Tap</option><option>Other</option></select></div>
+<div><label asp-for="CommunityId" class="form-label">Community</label><select asp-for="CommunityId" asp-items="ViewBag.Communities" class="form-select"><option value="">Choose community</option></select><span asp-validation-for="CommunityId" class="text-danger"></span></div>
+<div><label asp-for="Description" class="form-label">Description</label><textarea asp-for="Description" class="form-control" rows="2"></textarea></div>
+<div class="row"><div class="col"><label asp-for="Latitude" class="form-label"></label><input asp-for="Latitude" class="form-control" type="number" step="any"/></div><div class="col"><label asp-for="Longitude" class="form-label"></label><input asp-for="Longitude" class="form-control" type="number" step="any"/></div></div>
+<button class="btn btn-primary">Save source</button><a asp-action="Index">Cancel</a></form></div>

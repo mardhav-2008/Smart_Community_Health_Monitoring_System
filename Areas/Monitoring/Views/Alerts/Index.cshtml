@@ -1,0 +1,9 @@
+@model IEnumerable<EarlyWarningAlert>
+@{ ViewData["Title"] = "Early Warning Alerts"; }
+<div class="container py-4"><h1>Early Warning Alerts</h1><p class="text-muted">Review signals generated from submitted community data.</p>
+@if(TempData["SuccessMessage"] is string msg){<div class="alert alert-success">@msg</div>}
+@if(User.IsInRole("Administrator")){<form asp-action="GenerateFromRecentReports" method="post" class="mb-3"><button class="btn btn-primary">Generate report-cluster signals (7 days)</button></form>}
+<form method="get" class="mb-3"><select name="status" class="form-select" style="max-width:260px"><option value="">All statuses</option>@foreach(AlertStatus s in ViewBag.Statuses){<option value="@s" selected="@(ViewBag.SelectedStatus?.ToString()==s.ToString())">@s</option>}</select><button class="btn btn-outline-secondary mt-2">Filter</button></form>
+@foreach(var a in Model){<article class="card card-body mb-3"><div class="d-flex justify-content-between flex-wrap"><h2 class="h5">@a.Title</h2><span class="badge text-bg-warning">@a.Severity</span></div><p>@a.Description</p><p class="small text-muted mb-2">@a.Community.Name · @a.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm") UTC · @a.Status</p>
+@if(User.IsInRole("Administrator")){<form asp-action="UpdateStatus" asp-route-id="@a.Id" method="post" class="d-flex gap-2"><select name="status" class="form-select">@foreach(AlertStatus s in Enum.GetValues<AlertStatus>()){<option value="@s" selected="@(a.Status==s)">@s</option>}</select><button class="btn btn-outline-primary">Update</button></form>}</article>}
+</div>
