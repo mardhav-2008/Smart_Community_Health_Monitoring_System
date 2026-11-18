@@ -31,3 +31,10 @@ __pycache__/
 .env
 .env.*
 !.env.example
+
+# Bash
+*.sh
+
+# Temp files
+.temporary/*
+*.zip
