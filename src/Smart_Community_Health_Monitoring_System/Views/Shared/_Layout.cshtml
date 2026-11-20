@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -19,6 +19,10 @@
     rel="stylesheet" />
 
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @if (ViewContext.RouteData.Values["area"]?.ToString() == "Monitoring")
+    {
+        <link rel="stylesheet" href="~/css/monitoring.css" asp-append-version="true" />
+    }
 </head>
 
 <body>
@@ -46,6 +50,21 @@
                     <a asp-area="Communities" asp-controller="Communities" asp-action="Index"
                        class="@(ViewContext.RouteData.Values["area"]?.ToString() == "Communities" ? "is-current" : "")">
                         Communities
+                    </a>
+
+                    <a asp-area="Monitoring" asp-controller="WaterSources" asp-action="Index"
+                       class="nav-module-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "WaterSources" ? "is-current" : "")">
+                        Water sources
+                    </a>
+
+                    <a asp-area="Monitoring" asp-controller="HealthReports" asp-action="Index"
+                       class="nav-module-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "HealthReports" ? "is-current" : "")">
+                        Health reports
+                    </a>
+
+                    <a asp-area="Monitoring" asp-controller="Alerts" asp-action="Index"
+                       class="nav-module-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Alerts" ? "is-current" : "")">
+                        Alerts
                     </a>
 
                     @if (User.IsInRole("Administrator"))
@@ -114,9 +133,18 @@
         </nav>
     </header>
 
-    <main>
-        @RenderBody()
-    </main>
+    @if (ViewContext.RouteData.Values["area"]?.ToString() == "Monitoring")
+    {
+        <main class="monitoring-shell">
+            @RenderBody()
+        </main>
+    }
+    else
+    {
+        <main>
+            @RenderBody()
+        </main>
+    }
 
     <footer class="site-footer" id="contact">
         <div class="footer-main">

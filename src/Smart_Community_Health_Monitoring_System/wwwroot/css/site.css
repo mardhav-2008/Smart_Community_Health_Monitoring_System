@@ -3618,3 +3618,15 @@ img {
         font-size: .67rem;
     }
 }
+
+/* MONITORING MODULE NAVIGATION POLISH */
+@media (min-width: 801px) {
+    .app-navbar .nav-links { gap: 2px; min-width: 0; }
+    .app-navbar .nav-links a { padding: 7px 8px; font-size: .72rem; letter-spacing: -.01em; }
+    .app-navbar .nav-links a.is-current::after { width: 12px; margin-top: 3px; }
+}
+@media (max-width: 1100px) and (min-width: 801px) {
+    .app-navbar .nav-links a { padding-left: 5px; padding-right: 5px; font-size: .66rem; }
+    .app-navbar .nav-account { gap: 7px; }
+    .app-navbar .nav-cta { padding: 10px 12px; font-size: .66rem; }
+}
